@@ -1,4 +1,4 @@
-name: tg-notify
+name: tg-notif
 
 on: [push]
   
