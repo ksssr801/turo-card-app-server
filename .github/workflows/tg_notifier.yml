@@ -1,0 +1,18 @@
+name: tg-notify
+
+on: [push]
+  
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Update status
+      uses: appleboy/telegram-action@master
+      with:
+        to: ${{ secrets.TELEGRAM_TO }}
+        token: ${{ secrets.TELEGRAM_TOKEN }}
+        message: |  #https://help.github.com/en/actions/reference/contexts-and-expression-syntax-for-github-actions#github-context
+          Event - ${{ github.event_name }}
+          Commit in ${{ github.repository }} by "${{ github.actor }}"
+          Commit Message - " ${{ github.event.commits[0].message }} "
+          Compare - ${{ github.event.compare }}
