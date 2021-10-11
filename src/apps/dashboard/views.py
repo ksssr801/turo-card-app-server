@@ -8,6 +8,7 @@ import time
 from ..users.models import Accounts
 from ..users.serializers import AccountsSerializers
 from django.db.models import Q
+from ..users.views import *
 
 class DashboardViewSet(viewsets.ModelViewSet):
     serializer_class = CardsSerializers
@@ -21,10 +22,11 @@ class DashboardViewSet(viewsets.ModelViewSet):
         try:
             print ("request : ", request.user)
             data_obj = request.data
-            new_obj = {"username": str(request.user)}
+            user_info = get_user_details_for_username(str(request.user))
+            new_obj = {"username": user_info.get("full_name", str(request.user))}
             return Response(new_obj, status=status.HTTP_200_OK)
-        except:
-            print ("Exception in hompage function!")
+        except Exception as err:
+            print ("Exception in hompage function! : %s - %s" % (err, type(err)))
             pass
 
     def object_mapper(self):

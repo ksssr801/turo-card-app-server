@@ -16,11 +16,14 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from .social_auth import GoogleLogin
 
 urlpatterns = [
-    # path('admin/', admin.site.urls),
+    path('admin/', admin.site.urls),
     path('', include('apps.users.urls')),
     path('dashboard/', include('apps.dashboard.urls')),
     path('api/token/', TokenObtainPairView.as_view(), name="token_obtain_pair"),
-    path('api/token/refresh/', TokenRefreshView, name="token_refresh")
+    path('api/token/refresh/', TokenRefreshView, name="token_refresh"),
+    path('rest-auth/google/', GoogleLogin.as_view(), name='google_login'),
+
 ]

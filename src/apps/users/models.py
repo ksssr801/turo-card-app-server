@@ -5,6 +5,7 @@ class Accounts(models.Model):
     name = models.CharField(max_length=254)
     first_name = models.CharField(max_length=254)
     last_name = models.CharField(max_length=254)
+    full_name = models.CharField(max_length=254, default="")
     email = models.EmailField(max_length=254)
     password = models.CharField(max_length=254)
     is_active = models.BooleanField(default=False)

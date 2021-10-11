@@ -6,3 +6,5 @@ pip3 install pytz==2021.1
 pip3 install sqlparse==0.4.1
 pip3 install djangorestframework-simplejwt==4.8.0
 pip3 install PyJWT==2.1.0
+pip3 install django-allauth==0.45.0
+pip3 install django-rest-auth==0.9.5
