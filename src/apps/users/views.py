@@ -45,6 +45,11 @@ class RegisterApi(generics.GenericAPIView):
             return Response(user_data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 def get_user_details_for_username(username):
-    user_data = Accounts.objects.filter(name=username, is_deleted=0).values()
+    user_data = Accounts.objects.filter(name=username, is_deleted=False).values()
+    if user_data and user_data != -1: user_data = user_data[0]
+    return user_data
+
+def get_user_details_for_user_id(user_id):
+    user_data = Accounts.objects.filter(user_id=user_id, is_deleted=False).values()
     if user_data and user_data != -1: user_data = user_data[0]
     return user_data

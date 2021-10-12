@@ -8,6 +8,7 @@ class Cards(models.Model):
     name = models.CharField(max_length=254)
     description = models.CharField(max_length=254)
     card_image = models.CharField(max_length=254)
+    extra_params = models.TextField()
     last_update_time = models.IntegerField(null=True)
     creation_time = models.IntegerField(null=True)
     is_deleted = models.BooleanField(default=False)
@@ -27,3 +28,15 @@ class CardSwapRequestInfo(models.Model):
 
     class Meta:
         db_table = 'tbl_card_swap_request_info'
+
+class PresetCards(models.Model):
+    main_id = models.AutoField(primary_key=True)
+    default_name = models.CharField(max_length=254)
+    default_descr = models.CharField(max_length=254)
+    default_img = models.CharField(max_length=254)
+    card_css = models.TextField()
+    last_update_time = models.IntegerField(null=True)
+    creation_time = models.IntegerField(null=True)
+
+    class Meta:
+        db_table = 'tbl_preset_cards'
