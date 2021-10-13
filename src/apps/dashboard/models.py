@@ -12,6 +12,8 @@ class Cards(models.Model):
     extra_params = models.TextField()
     last_update_time = models.IntegerField(null=True)
     creation_time = models.IntegerField(null=True)
+    likes = models.TextField(default="[]")
+    comments = models.TextField(default="{}")
     is_deleted = models.BooleanField(default=False)
 
     class Meta:

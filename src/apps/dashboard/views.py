@@ -28,6 +28,11 @@ class DashboardViewSet(viewsets.ModelViewSet):
             user_card_dict = OrderedDict()
             all_cards = Cards.objects.filter(is_deleted=False, public_visibility=True).values()
             for ob in all_cards:
+                card_likes = len(eval(ob.get('likes', '[]')))
+                ob.update({'likes_count': card_likes})
+                liked_by_current_user = [x for x in eval(ob.get('likes', '[]')) if x == user_id]
+                if len(liked_by_current_user): ob.update({'isLiked': True})
+                else: ob.update({'isLiked': False})
                 if user_id != (ob.get("user_id", 0)):
                     ob.update({"extra_params": eval(ob.get("extra_params", "{}"))})
                     user_full_name = get_user_details_for_user_id(ob.get("user_id", "")).get("full_name", "")
@@ -104,6 +109,88 @@ class DashboardViewSet(viewsets.ModelViewSet):
             card_obj.creation_time = int(time.time())
             try:
                 card_obj.save()
+            except Exception as err:
+                print ("Exceprtion 501 : %s - %s " % (err, type(err)))
+                return Response({"status": "failed"}, status=status.HTTP_501_NOT_IMPLEMENTED)
+            return Response({"status": "success"}, status=status.HTTP_200_OK)
+        except Exception as err:
+            print ("Exceprtion 500 : %s - %s " % (err, type(err)))
+            return Response({"status": "error"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    @action(detail=False, methods=['post'], name="like_card", url_path='like-card')
+    def like_the_card(self, request):
+        try:
+            data_obj = request.data
+            card_id = int(data_obj.get('cardId', 0))
+            acc_obj = Accounts.objects.filter(name=str(request.user)).values()
+            if acc_obj and acc_obj!= -1: acc_obj = acc_obj[0]
+            card_obj = Cards.objects.get(card_id=card_id)
+            user_id = int(acc_obj.get("user_id", 0))
+            likes_obj = eval(card_obj.likes)
+            if user_id not in likes_obj: likes_obj.append(user_id)
+            card_obj.likes = likes_obj            
+            try:
+                card_obj.save()
+            except Exception as err:
+                print ("Exceprtion 501 : %s - %s " % (err, type(err)))
+                return Response({"status": "failed"}, status=status.HTTP_501_NOT_IMPLEMENTED)
+            return Response({"status": "success"}, status=status.HTTP_200_OK)
+        except Exception as err:
+            print ("Exceprtion 500 : %s - %s " % (err, type(err)))
+            return Response({"status": "error"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    @action(detail=False, methods=['post'], name="dislike_card", url_path='dislike-card')
+    def dislike_the_card(self, request):
+        try:
+            data_obj = request.data
+            card_id = int(data_obj.get('cardId', 0))
+            acc_obj = Accounts.objects.filter(name=str(request.user)).values()
+            if acc_obj and acc_obj!= -1: acc_obj = acc_obj[0]
+            card_obj = Cards.objects.get(card_id=card_id)
+            user_id = int(acc_obj.get("user_id", 0))
+            likes_obj = eval(card_obj.likes)
+            if user_id in likes_obj: likes_obj.remove(user_id)
+            card_obj.likes = likes_obj            
+            try:
+                card_obj.save()
+            except Exception as err:
+                print ("Exceprtion 501 : %s - %s " % (err, type(err)))
+                return Response({"status": "failed"}, status=status.HTTP_501_NOT_IMPLEMENTED)
+            return Response({"status": "success"}, status=status.HTTP_200_OK)
+        except Exception as err:
+            print ("Exceprtion 500 : %s - %s " % (err, type(err)))
+            return Response({"status": "error"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    @action(detail=False, methods=['post'], name="comment_on_card", url_path='comment-on-card')
+    def comment_on_card(self, request):
+        try:
+            data_obj = request.data
+            user_info = get_user_details_for_username(str(request.user))
+            card_id = int(data_obj.get('cardId', 0))
+            comment = str(data_obj.get('comment', ''))
+            acc_obj = Accounts.objects.filter(name=str(request.user)).values()
+            if acc_obj and acc_obj!= -1: acc_obj = acc_obj[0]
+            card_obj = Cards.objects.get(card_id=card_id)
+            user_id = int(acc_obj.get("user_id", 0))
+            comments_obj = eval(card_obj.comments)
+            user_comment_obj = {
+                'comment': comment,
+                'user': user_info.get('full_name', ''),
+                'time': int(time.time()),
+                'card_id': card_id
+            }
+            # print ("data : ", user_id, comments_obj)
+            if user_id in comments_obj.keys():
+                user_comment_list = comments_obj.get(user_id, [])
+                print ("user_comment_list :", user_comment_list)
+                user_comment_list.append(user_comment_obj)
+                comments_obj.update({user_id: user_comment_list})
+            else:
+                user_comment_list = []
+                user_comment_list.append(user_comment_obj)
+                comments_obj.update({user_id: user_comment_list})
+            card_obj.comments = comments_obj
+            try: card_obj.save()
             except Exception as err:
                 print ("Exceprtion 501 : %s - %s " % (err, type(err)))
                 return Response({"status": "failed"}, status=status.HTTP_501_NOT_IMPLEMENTED)
