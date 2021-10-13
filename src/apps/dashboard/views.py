@@ -21,12 +21,12 @@ class DashboardViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['post'], name="homepage", url_path='home')
     def homepage(self, request):
         try:
-            print ("request : ", request.user)
+            # print ("request : ", request.user)
             user_info = get_user_details_for_username(str(request.user))
             user_id = int(user_info.get("user_id", 0)) 
             user_card_details = []
             user_card_dict = OrderedDict()
-            all_cards = Cards.objects.filter(is_deleted=False).values()
+            all_cards = Cards.objects.filter(is_deleted=False, public_visibility=True).values()
             for ob in all_cards:
                 if user_id != (ob.get("user_id", 0)):
                     ob.update({"extra_params": eval(ob.get("extra_params", "{}"))})
@@ -98,6 +98,7 @@ class DashboardViewSet(viewsets.ModelViewSet):
             card_obj.description = data_obj.get("cardInfo", {}).get("card_descr", "")
             card_obj.description = data_obj.get("cardInfo", {}).get("card_descr", "")
             card_obj.card_image = data_obj.get("selectedCard", {}).get("default_img", "")
+            card_obj.public_visibility = data_obj.get("cardPublicVisibility", True)
             card_obj.extra_params = str(data_obj.get("selectedCard", {}))
             card_obj.last_update_time = int(time.time())
             card_obj.creation_time = int(time.time())

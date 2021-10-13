@@ -8,6 +8,7 @@ class Cards(models.Model):
     name = models.CharField(max_length=254)
     description = models.CharField(max_length=254)
     card_image = models.CharField(max_length=254)
+    public_visibility = models.BooleanField(default=True)
     extra_params = models.TextField()
     last_update_time = models.IntegerField(null=True)
     creation_time = models.IntegerField(null=True)
