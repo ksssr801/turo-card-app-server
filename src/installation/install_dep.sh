@@ -6,7 +6,7 @@ echo $SOURCEDIR
 
 cd /opt
 sudo python3 -m venv TuroCardEnv
-sudo chown -R kumars:kumars /opt/TuroCardEnv/
+sudo chown -R $USER:$USER /opt/TuroCardEnv/
 source TuroCardEnv/bin/activate
 cd $INSTDIR
 echo "Virtual environment (TuroCardEnv) has been created."
