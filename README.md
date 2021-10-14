@@ -5,12 +5,13 @@
 > Steps to run the app:
 
  1. Download zip file.
- 2. After unzipping, go to turo-card-app-server/src folder.
+ 2. After unzipping, go to turo-card-app-server-main/src/installation folder.
  3. Execute these commands to install:
 
     ```
     chmod +x install_dep.sh
     ./install_dep.sh
+    cd ..
     ```
  4. Execute command to run the server:
  
