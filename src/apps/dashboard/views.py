@@ -29,7 +29,10 @@ class DashboardViewSet(viewsets.ModelViewSet):
             all_cards = Cards.objects.filter(is_deleted=False, public_visibility=True).values()
             for ob in all_cards:
                 card_likes = len(eval(ob.get('likes', '[]')))
-                ob.update({'likes_count': card_likes})
+                card_comments = eval(ob.get('comments', '{}'))
+                tmp_card_comments = []
+                for va in card_comments.values(): tmp_card_comments += va
+                ob.update({'likes_count': card_likes, 'comments_count': len(tmp_card_comments)})
                 liked_by_current_user = [x for x in eval(ob.get('likes', '[]')) if x == user_id]
                 if len(liked_by_current_user): ob.update({'isLiked': True})
                 else: ob.update({'isLiked': False})
@@ -102,7 +105,7 @@ class DashboardViewSet(viewsets.ModelViewSet):
             card_obj.name = data_obj.get("cardInfo", {}).get("card_name", "")
             card_obj.description = data_obj.get("cardInfo", {}).get("card_descr", "")
             card_obj.description = data_obj.get("cardInfo", {}).get("card_descr", "")
-            card_obj.card_image = data_obj.get("selectedCard", {}).get("default_img", "")
+            card_obj.card_image = data_obj.get("cardImage", data_obj.get("selectedCard", {}).get("default_img", ""))
             card_obj.public_visibility = data_obj.get("cardPublicVisibility", True)
             card_obj.extra_params = str(data_obj.get("selectedCard", {}))
             card_obj.last_update_time = int(time.time())
@@ -179,7 +182,6 @@ class DashboardViewSet(viewsets.ModelViewSet):
                 'time': int(time.time()),
                 'card_id': card_id
             }
-            # print ("data : ", user_id, comments_obj)
             if user_id in comments_obj.keys():
                 user_comment_list = comments_obj.get(user_id, [])
                 print ("user_comment_list :", user_comment_list)
@@ -195,6 +197,21 @@ class DashboardViewSet(viewsets.ModelViewSet):
                 print ("Exceprtion 501 : %s - %s " % (err, type(err)))
                 return Response({"status": "failed"}, status=status.HTTP_501_NOT_IMPLEMENTED)
             return Response({"status": "success"}, status=status.HTTP_200_OK)
+        except Exception as err:
+            print ("Exceprtion 500 : %s - %s " % (err, type(err)))
+            return Response({"status": "error"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    @action(detail=False, methods=['get'], name="card_comments", url_path='card-comments/(?P<card_id>[^/.]+)')
+    def get_card_comments(self, request, card_id):
+        try:
+            card_obj = Cards.objects.get(card_id=card_id)
+            comments_obj = eval(card_obj.comments)
+            card_comments = []
+            for va in comments_obj.values(): card_comments += va
+            card_comments = sorted(card_comments, key = lambda x: x.get('time'), reverse=True)
+            for va in card_comments:
+                va.update({'timeAgo': self.pretty_date(int(va.get('time')))})
+            return Response({"commentsList": card_comments}, status=status.HTTP_200_OK)
         except Exception as err:
             print ("Exceprtion 500 : %s - %s " % (err, type(err)))
             return Response({"status": "error"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -218,3 +235,45 @@ class DashboardViewSet(viewsets.ModelViewSet):
         except:
             pass
 
+    def pretty_date(self, time=False):
+        """
+        Get a datetime object or a int() Epoch timestamp and return a
+        pretty string like 'an hour ago', 'Yesterday', '3 months ago',
+        'just now', etc
+        """
+        from datetime import datetime
+        now = datetime.now()
+        if type(time) is int:
+            diff = now - datetime.fromtimestamp(time)
+        elif isinstance(time,datetime):
+            diff = now - time
+        elif not time:
+            diff = now - now
+        second_diff = diff.seconds
+        day_diff = diff.days
+
+        if day_diff < 0:
+            return ''
+
+        if day_diff == 0:
+            if second_diff < 10:
+                return "just now"
+            if second_diff < 60:
+                return str(int(second_diff)) + " seconds ago"
+            if second_diff < 120:
+                return "a minute ago"
+            if second_diff < 3600:
+                return str(int(second_diff / 60)) + " minutes ago"
+            if second_diff < 7200:
+                return "an hour ago"
+            if second_diff < 86400:
+                return str(int(second_diff / 3600)) + " hours ago"
+        if day_diff == 1:
+            return "Yesterday"
+        if day_diff < 7:
+            return str(int(day_diff)) + " days ago"
+        if day_diff < 31:
+            return str(int(day_diff / 7)) + " weeks ago"
+        if day_diff < 365:
+            return str(day_diff / 30) + " months ago"
+        return str(int(day_diff / 365)) + " years ago"
