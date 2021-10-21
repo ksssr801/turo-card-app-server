@@ -213,7 +213,7 @@ class DashboardViewSet(viewsets.ModelViewSet):
                 va.update({'timeAgo': self.pretty_date(int(va.get('time')))})
             return Response({"commentsList": card_comments}, status=status.HTTP_200_OK)
         except Exception as err:
-            print ("Exceprtion 500 : %s - %s " % (err, type(err)))
+            print ("Exception 500 : %s - %s " % (err, type(err)))
             return Response({"status": "error"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def object_mapper(self):
